@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ลงทะเบียนอาจารย์ — ระบบประเมิน</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#EEF3F1;--surface:#FFFFFF;--surface-2:#F7FAF8;--ink:#16261F;--ink-soft:#5B6F68;--ink-faint:#93A39D;
+    --primary:#13876E;--primary-deep:#0C5E4D;--primary-soft:#DCEEE8;--line:#E1E9E5;--good:#1E9E7E;
+    --shadow:0 1px 2px rgba(16,38,31,.05),0 8px 24px rgba(16,38,31,.06);--radius:18px;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'IBM Plex Sans Thai',sans-serif;background:#D9E2DF;color:var(--ink);display:flex;align-items:center;justify-content:center;min-height:100dvh;line-height:1.55;-webkit-font-smoothing:antialiased;padding:16px}
+  .mono{font-family:'IBM Plex Mono',monospace;font-feature-settings:"tnum";word-break:break-all}
+  .card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);font-weight:600}
+  h1{font-size:20px;font-weight:600;margin-top:4px;margin-bottom:4px}
+  p{font-size:13.5px;color:var(--ink-soft);margin-bottom:14px}
+  .box{background:var(--surface-2);border:1.5px dashed var(--line);border-radius:14px;padding:14px;margin:14px 0}
+  .label{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block}
+  .uid{font-size:14px;font-weight:600;color:var(--primary-deep)}
+  .copybox{display:flex;gap:8px;margin-top:14px}
+  .copybox textarea{flex:1;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#fff;resize:none;height:90px}
+  .btn{display:block;width:100%;text-align:center;background:var(--primary);color:#fff;font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:14px;padding:14px;cursor:pointer;box-shadow:0 8px 20px rgba(19,135,110,.3);transition:.15s;margin-top:12px}
+  .btn:active{transform:translateY(1px)}
+  select{width:100%;font-family:inherit;font-size:14.5px;color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;background:var(--surface-2);outline:none;margin-bottom:6px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary-deep)}
+  .pill.warn{background:#FCE5DC;color:#C2542F}
+  .step{font-size:12.5px;color:var(--ink-soft);margin:4px 0}
+  .step b{color:var(--ink)}
+  .loading{text-align:center;color:var(--ink-faint);padding:30px 0;font-size:13.5px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="eyebrow">สำหรับแอดมิน — ลงทะเบียนสิทธิ์อาจารย์</div>
+    <h1>ดึงรหัสยืนยันตัวตน</h1>
+    <p>หน้านี้ใช้ครั้งเดียวต่อคน เพื่อให้แอดมินเปิดสิทธิ์ดูหน้า "ภาพรวมทั้งรุ่น" ในระบบประเมิน — ไม่เกี่ยวกับการประเมินหรือดูคะแนนใดๆ</p>
+    <div id="content"><div class="loading">กำลังเชื่อมต่อ LINE…</div></div>
+  </div>
+  <div class="toast" id="toast">คัดลอกแล้ว ✓</div>
+
+<script>
+/* ===================== แก้ 2 ค่านี้ — ใช้ค่าเดียวกับ liff-index.html ===================== */
+const LIFF_ID = '2010373697-eRlpdXE0';
+const API     = 'https://script.google.com/macros/s/AKfycbwM5gNNA68y5b8Yx_E-uFFey9-YNkZ6zRxMTfQylxIJnKwihz-DADGkEWR-4mooTzBMgA/exec';
+/* ======================================================================================= */
+
+const DEMO = (LIFF_ID==='YOUR_LIFF_ID' || API==='YOUR_APPS_SCRIPT_EXEC_URL');
+
+window.addEventListener('load',()=>{
+  if(DEMO){ render({userId:'U_ตัวอย่าง1234567890abcdef1234', isFacultyAlready:false,
+    facultyList:[
+      {name:'พญ.ธัญญพัทธ์ สุนทรานุรักษ์', nickname:'อ.จิ',    lineId:'Dr.thanyapat'},
+      {name:'นพ.สกล เลิศวิจิตรกมล',       nickname:'',        lineId:'kornunikorn'},
+      {name:'นพ.พิเชษฐ์ น้อยหุ่น',         nickname:'อ.โจ้',   lineId:'Joepichet'},
+      {name:'พญ.กรรณิกา จิรวานิชเชฐ',     nickname:'อ.กุ้ง',  lineId:'koong16'},
+      {name:'นพ.ปริญญา สุทธิธรรมานันท์',  nickname:'อ.เหน่ง', lineId:'bankneng'},
+      {name:'นพ.ภูมิพันธ์ ภัททิยไพบูลย์', nickname:'อ.อื้ด',  lineId:'uddyz'},
+      {name:'พญ.ชามิพร เบ็ญจาศิริโรจน์',  nickname:'อ.เบ็นซ์', lineId:'elebbenz'}
+    ]}, 'คุณ (โหมดตัวอย่าง)'); return; }
+  liff.init({liffId:LIFF_ID}).then(()=>{
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    return liff.getProfile();
+  }).then(p=>{
+    if(!p) return;
+    return fetch(API+'?action=whoami&userId='+encodeURIComponent(p.userId))
+      .then(r=>r.json()).then(d=>render(d,p.displayName));
+  }).catch(()=>{
+    document.getElementById('content').innerHTML='<div class="loading">เชื่อมต่อ LINE ไม่สำเร็จ — เปิดผ่านแอป LINE อีกครั้ง</div>';
+  });
+});
+
+function render(d, displayName){
+  const statusPill = d.isFacultyAlready
+    ? '<span class="pill">✓ มีสิทธิ์อาจารย์อยู่แล้ว</span>'
+    : '<span class="pill warn">ยังไม่มีสิทธิ์อาจารย์</span>';
+
+  // รายชื่ออาจารย์จาก FACULTY config — ให้เลือกว่ากำลังลงทะเบียนในนามใคร (ใส่ลงข้อความที่จะส่งแอดมิน)
+  let facOptions='<option value="">— (ไม่ระบุ/อื่นๆ) —</option>';
+  (d.facultyList||[]).forEach(f=>{
+    const label=f.name+(f.nickname?' ('+f.nickname+')':'');
+    facOptions+='<option value="'+label.replace(/"/g,'')+'">'+label+'</option>';
+  });
+
+  document.getElementById('content').innerHTML=`
+    <div style="margin-bottom:10px">${statusPill}</div>
+    <div class="step">เข้าสู่ระบบในนาม: <b>${displayName||'-'}</b></div>
+    <div class="box">
+      <span class="label">User ID (ของบัญชี LINE นี้)</span>
+      <div class="uid mono" id="uidText">${d.userId}</div>
+    </div>
+    <span class="label">คุณคืออาจารย์ท่านใด (เพื่อใส่ในข้อความที่ส่งแอดมิน)</span>
+    <select id="facSelect">${facOptions}</select>
+    <div class="copybox">
+      <textarea id="copyText" readonly></textarea>
+    </div>
+    <button class="btn" onclick="copyMsg()">คัดลอกข้อความส่งแอดมิน</button>
+    <p style="margin-top:14px;font-size:12px">
+      <b>วิธีใช้:</b> กดคัดลอกข้อความด้านบน แล้วส่งให้แอดมินทาง LINE/อีเมล
+      แอดมินจะนำ User ID นี้ไปเพิ่มใน <code>FACULTY_LINE_IDS</code> ของระบบ
+      (ทำครั้งเดียว ไม่ต้องทำซ้ำ)
+    </p>
+  `;
+  document.getElementById('facSelect').addEventListener('change', updateCopyText);
+  updateCopyText();
+
+  function updateCopyText(){
+    const who=document.getElementById('facSelect').value;
+    const name=who || (displayName||'(ไม่ระบุชื่อ)');
+    document.getElementById('copyText').value =
+`ขอเปิดสิทธิ์อาจารย์ในระบบประเมินกิจกรรมแพทย์ประจำบ้าน
+ชื่อ: ${name}
+LINE display name: ${displayName||'-'}
+User ID: ${d.userId}`;
+  }
+}
+
+function copyMsg(){
+  const ta=document.getElementById('copyText');
+  ta.select(); ta.setSelectionRange(0, 99999);
+  try{
+    navigator.clipboard ? navigator.clipboard.writeText(ta.value) : document.execCommand('copy');
+  }catch(e){ document.execCommand('copy'); }
+  const t=document.getElementById('toast');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
