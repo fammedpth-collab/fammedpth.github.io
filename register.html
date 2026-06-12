@@ -55,8 +55,15 @@ const DEMO = (LIFF_ID==='YOUR_LIFF_ID' || API==='YOUR_APPS_SCRIPT_EXEC_URL');
 
 window.addEventListener('load',()=>{
   if(DEMO){ render({userId:'U_ตัวอย่าง1234567890abcdef1234', isFacultyAlready:false,
-    facultyList:[{name:'พญ.ธัญญพัทธ์ สุนทรานุรักษ์',nickname:'อ.จิ',lineId:'Dr.thanyapat'},
-                  {name:'นพ.สกล เลิศวิจิตรกมล',nickname:'',lineId:'kornunikorn'}]}, 'คุณ (โหมดตัวอย่าง)'); return; }
+    facultyList:[
+      {name:'พญ.ธัญญพัทธ์ สุนทรานุรักษ์', nickname:'อ.จิ',    lineId:'Dr.thanyapat'},
+      {name:'นพ.พิเชษฐ์ น้อยหุ่น',         nickname:'อ.โจ้',   lineId:'Joepichet'},
+      {name:'นพ.สกล เลิศวิจิตรกมล',       nickname:'อ.กร',        lineId:'kornunikorn'},
+      {name:'พญ.กรรณิกา จิรวานิชเชฐ',     nickname:'อ.กุ้ง',  lineId:'koong16'},
+      {name:'นพ.ปริญญา สุทธิธรรมานันท์',  nickname:'อ.เหน่ง', lineId:'bankneng'},
+      {name:'นพ.ภูมิพันธ์ ภัททิยไพบูลย์', nickname:'อ.อื้ด',  lineId:'uddyz'},
+      {name:'พญ.ชามิพร เบ็ญจาศิริโรจน์',  nickname:'อ.เบ็นซ์', lineId:'elebbenz'}
+    ]}, 'คุณ (โหมดตัวอย่าง)'); return; }
   liff.init({liffId:LIFF_ID}).then(()=>{
     if(!liff.isLoggedIn()){ liff.login(); return; }
     return liff.getProfile();
